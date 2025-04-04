@@ -1,18 +1,18 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BookOpen, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
+import { Clock, Book, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-type CarreraCardProps = {
+interface CarreraCardProps {
   id: string;
   nombre: string;
   duracion: number;
-  descripcion: string;
+  descripcion?: string;
   cantidadMaterias: number;
-  className?: string;
-};
+  planEstudioUrl?: string;
+}
 
 const CarreraCard: React.FC<CarreraCardProps> = ({
   id,
@@ -20,33 +20,38 @@ const CarreraCard: React.FC<CarreraCardProps> = ({
   duracion,
   descripcion,
   cantidadMaterias,
-  className,
+  planEstudioUrl
 }) => {
   return (
-    <Card className={`shadow-card overflow-hidden h-full ${className}`}>
+    <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl">{nombre}</CardTitle>
-            <CardDescription className="text-sm mt-1">{duracion} años • {cantidadMaterias} materias</CardDescription>
-          </div>
-          <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-            <BookOpen className="h-5 w-5" />
-          </div>
-        </div>
+        <CardTitle className="text-lg">{nombre}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600 line-clamp-3">
-          {descripcion}
-        </p>
+      <CardContent className="flex-1">
+        <p className="text-sm text-muted-foreground mb-4">{descripcion}</p>
+        <div className="flex items-center text-sm text-muted-foreground mb-2">
+          <Clock className="h-4 w-4 mr-2" />
+          <span>Duración: {duracion} años</span>
+        </div>
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Book className="h-4 w-4 mr-2" />
+          <span>Materias: {cantidadMaterias}</span>
+        </div>
       </CardContent>
-      <CardFooter className="pt-2">
-        <Button asChild variant="outline" className="w-full text-primary border-primary/20">
+      <CardFooter className="pt-2 flex gap-2">
+        <Button variant="default" asChild className="flex-1">
           <Link to={`/carreras/${id}`}>
-            Ver plan de estudios
-            <ArrowRight className="h-4 w-4 ml-2" />
+            Ver detalle
           </Link>
         </Button>
+        {planEstudioUrl && (
+          <Button variant="outline" className="flex gap-1" asChild>
+            <a href={planEstudioUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4" />
+              <span>Plan de estudios</span>
+            </a>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

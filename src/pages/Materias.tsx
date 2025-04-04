@@ -1,15 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
+import MateriaCard from '@/components/academico/MateriaCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Plus, Search, Edit, Trash } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger, 
+  DialogClose 
+} from '@/components/ui/dialog';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
+import { Plus, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -21,7 +34,10 @@ interface Materia {
   cuatrimestre: number;
   horas: number;
   carrera_id: string;
-  carrera_nombre?: string;
+  docente?: string;
+  carrera?: {
+    nombre: string;
+  };
 }
 
 interface Carrera {
@@ -32,6 +48,7 @@ interface Carrera {
 const Materias: React.FC = () => {
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const [filteredMaterias, setFilteredMaterias] = useState<Materia[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -40,25 +57,54 @@ const Materias: React.FC = () => {
     year: 1,
     cuatrimestre: 1,
     horas: 4,
-    carrera_id: ''
+    carrera_id: '',
+    docente: ''
   });
 
-  const fetchMaterias = async () => {
-    setLoading(true);
+  const fetchCarreras = async () => {
     try {
-      const { data: materiasData, error: materiasError } = await supabase
+      const { data, error } = await supabase
+        .from('carreras')
+        .select('id, nombre')
+        .order('nombre');
+      
+      if (error) throw error;
+      setCarreras(data || []);
+      
+      // Si hay carreras, seleccionar la primera por defecto
+      if (data && data.length > 0) {
+        setFormData(prev => ({ ...prev, carrera_id: data[0].id }));
+      }
+    } catch (error) {
+      console.error('Error al cargar carreras:', error);
+      toast.error('Error al cargar carreras');
+    }
+  };
+
+  const fetchMaterias = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
         .from('materias')
-        .select('*, carreras(id, nombre)');
+        .select(`
+          *,
+          carrera:carreras(nombre)
+        `)
+        .order('year')
+        .order('cuatrimestre')
+        .order('nombre');
       
-      if (materiasError) throw materiasError;
+      if (error) throw error;
       
-      // Transformar los datos para incluir el nombre de la carrera
-      const formattedMaterias = materiasData.map(mat => ({
-        ...mat,
-        carrera_nombre: mat.carreras?.nombre
-      }));
+      const formattedData = data?.map(materia => ({
+        ...materia,
+        carrera: {
+          nombre: materia.carrera?.nombre || 'Sin carrera asignada'
+        }
+      })) || [];
       
-      setMaterias(formattedMaterias);
+      setMaterias(formattedData);
+      setFilteredMaterias(formattedData);
     } catch (error) {
       console.error('Error al cargar materias:', error);
       toast.error('Error al cargar materias');
@@ -67,54 +113,53 @@ const Materias: React.FC = () => {
     }
   };
 
-  const fetchCarreras = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('carreras')
-        .select('id, nombre');
-      
-      if (error) throw error;
-      setCarreras(data || []);
-    } catch (error) {
-      console.error('Error al cargar carreras:', error);
-    }
-  };
-
   useEffect(() => {
     fetchCarreras();
     fetchMaterias();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    const filtered = materias.filter(materia => 
+      materia.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      materia.codigo.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredMaterias(filtered);
+  }, [searchQuery, materias]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: name === 'year' || name === 'cuatrimestre' || name === 'horas' 
-        ? parseInt(value, 10) 
-        : value 
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'year' || name === 'cuatrimestre' || name === 'horas'
+        ? parseInt(value)
+        : value
     }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('materias')
-        .insert([formData])
-        .select();
+        .insert([formData]);
       
       if (error) throw error;
       
-      toast.success('Materia agregada correctamente');
+      toast.success('Materia creada exitosamente');
       setFormData({
         codigo: '',
         nombre: '',
         year: 1,
         cuatrimestre: 1,
         horas: 4,
-        carrera_id: ''
+        carrera_id: formData.carrera_id, // Mantener la carrera seleccionada
+        docente: ''
       });
-      
       fetchMaterias();
     } catch (error) {
       console.error('Error al crear materia:', error);
@@ -122,39 +167,14 @@ const Materias: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('¿Está seguro de eliminar esta materia? Esta acción no se puede deshacer.')) {
-      try {
-        const { error } = await supabase
-          .from('materias')
-          .delete()
-          .eq('id', id);
-        
-        if (error) throw error;
-        
-        toast.success('Materia eliminada correctamente');
-        fetchMaterias();
-      } catch (error) {
-        console.error('Error al eliminar materia:', error);
-        toast.error('Error al eliminar materia');
-      }
-    }
-  };
-
-  const filteredMaterias = materias.filter(materia => 
-    materia.codigo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    materia.nombre.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <MainLayout userRole="admin" userName="Admin Demo">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Materias</h1>
-            <p className="text-muted-foreground">Administración de materias y asignaturas</p>
+            <p className="text-muted-foreground">Gestión del catálogo de materias</p>
           </div>
-          
           <Dialog>
             <DialogTrigger asChild>
               <Button>
@@ -164,9 +184,9 @@ const Materias: React.FC = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[550px]">
               <DialogHeader>
-                <DialogTitle>Agregar Materia</DialogTitle>
+                <DialogTitle>Crear nueva materia</DialogTitle>
                 <DialogDescription>
-                  Complete el formulario para agregar una nueva materia
+                  Complete el formulario para crear una nueva materia
                 </DialogDescription>
               </DialogHeader>
               
@@ -174,22 +194,22 @@ const Materias: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="codigo">Código</Label>
-                    <Input 
-                      id="codigo" 
-                      name="codigo" 
-                      value={formData.codigo} 
-                      onChange={handleInputChange} 
-                      required 
+                    <Input
+                      id="codigo"
+                      name="codigo"
+                      value={formData.codigo}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
-                    <Input 
-                      id="nombre" 
-                      name="nombre" 
-                      value={formData.nombre} 
-                      onChange={handleInputChange} 
-                      required 
+                    <Input
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
@@ -197,61 +217,80 @@ const Materias: React.FC = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="year">Año</Label>
-                    <Input 
-                      id="year" 
-                      name="year" 
-                      type="number"
-                      min="1"
-                      max="6"
-                      value={formData.year} 
-                      onChange={handleInputChange} 
-                      required 
-                    />
+                    <Select 
+                      value={formData.year.toString()} 
+                      onValueChange={(value) => handleSelectChange('year', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Año" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1° año</SelectItem>
+                        <SelectItem value="2">2° año</SelectItem>
+                        <SelectItem value="3">3° año</SelectItem>
+                        <SelectItem value="4">4° año</SelectItem>
+                        <SelectItem value="5">5° año</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cuatrimestre">Cuatrimestre</Label>
-                    <Input 
-                      id="cuatrimestre" 
-                      name="cuatrimestre" 
-                      type="number"
-                      min="1"
-                      max="2"
-                      value={formData.cuatrimestre} 
-                      onChange={handleInputChange} 
-                      required 
-                    />
+                    <Select 
+                      value={formData.cuatrimestre.toString()} 
+                      onValueChange={(value) => handleSelectChange('cuatrimestre', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Cuatrimestre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1° cuatrimestre</SelectItem>
+                        <SelectItem value="2">2° cuatrimestre</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="horas">Horas Semanales</Label>
-                    <Input 
-                      id="horas" 
-                      name="horas" 
+                    <Label htmlFor="horas">Horas semanales</Label>
+                    <Input
+                      id="horas"
+                      name="horas"
                       type="number"
                       min="1"
-                      value={formData.horas} 
-                      onChange={handleInputChange} 
-                      required 
+                      max="20"
+                      value={formData.horas}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="carrera_id">Carrera</Label>
-                  <select
-                    id="carrera_id"
-                    name="carrera_id"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={formData.carrera_id}
-                    onChange={handleInputChange}
-                    required
+                  <Select 
+                    value={formData.carrera_id} 
+                    onValueChange={(value) => handleSelectChange('carrera_id', value)}
                   >
-                    <option value="">Seleccione una carrera</option>
-                    {carreras.map(carrera => (
-                      <option key={carrera.id} value={carrera.id}>
-                        {carrera.nombre}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una carrera" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {carreras.map(carrera => (
+                        <SelectItem key={carrera.id} value={carrera.id}>
+                          {carrera.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="docente">Docente a cargo</Label>
+                  <Input
+                    id="docente"
+                    name="docente"
+                    placeholder="Apellido y nombre del docente"
+                    value={formData.docente}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 
                 <DialogFooter>
@@ -268,76 +307,39 @@ const Materias: React.FC = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar por código o nombre..."
+            placeholder="Buscar materias por código o nombre..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Código</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Año</TableHead>
-                  <TableHead>Cuatrimestre</TableHead>
-                  <TableHead>Horas</TableHead>
-                  <TableHead>Carrera</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-6">
-                      Cargando materias...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredMaterias.length > 0 ? (
-                  filteredMaterias.map((materia) => (
-                    <TableRow key={materia.id}>
-                      <TableCell>{materia.codigo}</TableCell>
-                      <TableCell className="font-medium">{materia.nombre}</TableCell>
-                      <TableCell>{materia.year}°</TableCell>
-                      <TableCell>{materia.cuatrimestre}°</TableCell>
-                      <TableCell>{materia.horas} hs</TableCell>
-                      <TableCell>{materia.carrera_nombre || '-'}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            asChild
-                          >
-                            <Link to={`/materias/${materia.id}`}>
-                              <Edit className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleDelete(materia.id)}
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-6">
-                      No se encontraron materias
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        {loading ? (
+          <div className="text-center py-10">
+            <p>Cargando materias...</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredMaterias.map((materia) => (
+              <MateriaCard
+                key={materia.id}
+                id={materia.id}
+                codigo={materia.codigo}
+                nombre={materia.nombre}
+                year={materia.year}
+                cuatrimestre={materia.cuatrimestre}
+                horas={materia.horas}
+                carrera={materia.carrera?.nombre || ''}
+                docente={materia.docente}
+              />
+            ))}
+            {filteredMaterias.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No se encontraron materias con ese nombre o código</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </MainLayout>
   );

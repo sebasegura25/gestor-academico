@@ -1,71 +1,65 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Book, Clock, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-type EstadoAcademico = 'Cursando' | 'Regular' | 'Acreditada' | 'Libre';
-
-type MateriaCardProps = {
+interface MateriaCardProps {
+  id: string;
   codigo: string;
   nombre: string;
-  estado: EstadoAcademico;
-  fecha?: string;
-  nota?: number;
-  className?: string;
-};
+  year: number;
+  cuatrimestre: number;
+  horas: number;
+  carrera: string;
+  docente?: string;
+}
 
-const getEstadoColor = (estado: EstadoAcademico) => {
-  switch (estado) {
-    case 'Acreditada': return 'bg-green-500';
-    case 'Regular': return 'bg-yellow-500';
-    case 'Cursando': return 'bg-blue-500';
-    case 'Libre': return 'bg-red-500';
-    default: return 'bg-gray-500';
-  }
-};
-
-const getEstadoIcon = (estado: EstadoAcademico) => {
-  switch (estado) {
-    case 'Acreditada': return '🟢';
-    case 'Regular': return '🟡';
-    case 'Cursando': return '🔵';
-    case 'Libre': return '🔴';
-    default: return '⚪';
-  }
-};
-
-const MateriaCard: React.FC<MateriaCardProps> = ({
-  codigo,
-  nombre,
-  estado,
-  fecha,
-  nota,
-  className,
+const MateriaCard: React.FC<MateriaCardProps> = ({ 
+  id, 
+  codigo, 
+  nombre, 
+  year, 
+  cuatrimestre, 
+  horas, 
+  carrera,
+  docente
 }) => {
   return (
-    <Card className={`shadow-card hover:shadow-md transition-shadow ${className}`}>
-      <CardContent className="p-4">
-        <div className="flex flex-col space-y-2">
-          <div className="font-medium text-gray-900">
-            {codigo} - {nombre}
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-2">
+        <div className="text-xs font-medium text-muted-foreground mb-1">{codigo}</div>
+        <CardTitle className="text-lg">{nombre}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 space-y-2">
+        <div className="flex justify-between">
+          <div className="text-sm text-muted-foreground">
+            {year}° año - {cuatrimestre}° cuatrimestre
           </div>
-          <div className="flex items-center space-x-1.5">
-            <span>
-              {getEstadoIcon(estado)}
-            </span>
-            <Badge className={`${getEstadoColor(estado)}`}>
-              {estado} {nota ? `(${nota})` : ''}
-            </Badge>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Clock className="h-4 w-4 mr-1" />
+            <span>{horas}h</span>
           </div>
-          {fecha && (
-            <div className="flex items-center text-xs text-gray-500 mt-1">
-              <Calendar className="h-3 w-3 mr-1" />
-              {fecha}
-            </div>
-          )}
         </div>
+        <div className="text-sm text-muted-foreground flex items-center">
+          <Book className="h-4 w-4 mr-1" />
+          <span>{carrera}</span>
+        </div>
+        {docente && (
+          <div className="text-sm text-muted-foreground flex items-center">
+            <User className="h-4 w-4 mr-1" />
+            <span>{docente}</span>
+          </div>
+        )}
       </CardContent>
+      <CardFooter className="pt-2">
+        <Button variant="default" asChild className="w-full">
+          <Link to={`/materias/${id}`}>
+            Ver detalle
+          </Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

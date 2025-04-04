@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   Dialog, DialogContent, DialogDescription, DialogFooter, 
   DialogHeader, DialogTitle, DialogTrigger, DialogClose 
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Calendar, Plus, AlertTriangle } from 'lucide-react';
+import { Calendar, Plus, AlertTriangle, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -53,6 +54,8 @@ interface Correlatividad {
 
 const Inscripciones: React.FC = () => {
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
+  const [filteredEstudiantes, setFilteredEstudiantes] = useState<Estudiante[]>([]);
+  const [estudianteSearch, setEstudianteSearch] = useState<string>('');
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [estadosAcademicos, setEstadosAcademicos] = useState<EstadoAcademico[]>([]);
@@ -81,14 +84,29 @@ const Inscripciones: React.FC = () => {
     }
   }, [currentEstudiante]);
   
+  useEffect(() => {
+    if (estudianteSearch.trim() === '') {
+      setFilteredEstudiantes(estudiantes);
+    } else {
+      const filtered = estudiantes.filter(e => 
+        e.apellido.toLowerCase().includes(estudianteSearch.toLowerCase()) || 
+        e.nombre.toLowerCase().includes(estudianteSearch.toLowerCase()) || 
+        e.dni.includes(estudianteSearch)
+      );
+      setFilteredEstudiantes(filtered);
+    }
+  }, [estudianteSearch, estudiantes]);
+  
   const fetchEstudiantes = async () => {
     try {
       const { data, error } = await supabase
         .from('estudiantes')
-        .select('id, nombre, apellido, dni');
+        .select('id, nombre, apellido, dni')
+        .order('apellido');
       
       if (error) throw error;
       setEstudiantes(data || []);
+      setFilteredEstudiantes(data || []);
       
       // Si hay estudiantes, seleccionar el primero por defecto
       if (data && data.length > 0) {
@@ -121,7 +139,7 @@ const Inscripciones: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('inscripciones')
-        .select('*, materia:materias!materia_id(codigo, nombre)')
+        .select('*, materia:materias!inscripciones_materia_id_fkey(codigo, nombre)')
         .eq('estudiante_id', estudianteId);
       
       if (error) throw error;
@@ -300,7 +318,7 @@ const Inscripciones: React.FC = () => {
                     required
                   >
                     <option value="">Seleccione un estudiante</option>
-                    {estudiantes.map(estudiante => (
+                    {filteredEstudiantes.map(estudiante => (
                       <option key={estudiante.id} value={estudiante.id}>
                         {estudiante.apellido}, {estudiante.nombre} - DNI: {estudiante.dni}
                       </option>
@@ -412,16 +430,26 @@ const Inscripciones: React.FC = () => {
                 <CardTitle>Seleccionar Estudiante</CardTitle>
                 <CardDescription>Ver inscripciones por estudiante</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Buscar por apellido o DNI..."
+                    className="pl-10"
+                    value={estudianteSearch}
+                    onChange={(e) => setEstudianteSearch(e.target.value)}
+                  />
+                </div>
+                
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={currentEstudiante}
                   onChange={handleEstudianteChange}
                 >
                   <option value="">Seleccione un estudiante</option>
-                  {estudiantes.map(estudiante => (
+                  {filteredEstudiantes.map(estudiante => (
                     <option key={estudiante.id} value={estudiante.id}>
-                      {estudiante.apellido}, {estudiante.nombre}
+                      {estudiante.apellido}, {estudiante.nombre} - DNI: {estudiante.dni}
                     </option>
                   ))}
                 </select>

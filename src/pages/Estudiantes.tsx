@@ -1,20 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
-} from '@/components/ui/table';
-import { 
-  Dialog, DialogContent, DialogDescription, DialogFooter, 
-  DialogHeader, DialogTitle, DialogTrigger, DialogClose 
-} from '@/components/ui/dialog';
-import { Plus, Search, Edit, Trash, ArrowRight } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger, 
+  DialogClose 
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Search, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -25,8 +33,10 @@ interface Estudiante {
   dni: string;
   email: string;
   fecha_ingreso: string;
-  carrera_id: string | null;
-  carrera_nombre?: string;
+  carrera_id: string;
+  carrera?: {
+    nombre: string;
+  };
 }
 
 interface Carrera {
@@ -37,6 +47,7 @@ interface Carrera {
 const Estudiantes: React.FC = () => {
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const [filteredEstudiantes, setFilteredEstudiantes] = useState<Estudiante[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -47,23 +58,50 @@ const Estudiantes: React.FC = () => {
     fecha_ingreso: new Date().toISOString().split('T')[0],
     carrera_id: ''
   });
-  
-  const fetchEstudiantes = async () => {
-    setLoading(true);
+
+  const fetchCarreras = async () => {
     try {
-      const { data: estudiantesData, error: estudiantesError } = await supabase
+      const { data, error } = await supabase
+        .from('carreras')
+        .select('id, nombre')
+        .order('nombre');
+      
+      if (error) throw error;
+      setCarreras(data || []);
+      
+      // Si hay carreras, seleccionar la primera por defecto
+      if (data && data.length > 0) {
+        setFormData(prev => ({ ...prev, carrera_id: data[0].id }));
+      }
+    } catch (error) {
+      console.error('Error al cargar carreras:', error);
+      toast.error('Error al cargar carreras');
+    }
+  };
+
+  const fetchEstudiantes = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
         .from('estudiantes')
-        .select('*, carreras(id, nombre)');
+        .select(`
+          *,
+          carrera:carreras(nombre)
+        `)
+        .order('apellido')
+        .order('nombre');
       
-      if (estudiantesError) throw estudiantesError;
+      if (error) throw error;
       
-      // Transformar los datos para incluir el nombre de la carrera
-      const formattedEstudiantes = estudiantesData.map(est => ({
-        ...est,
-        carrera_nombre: est.carreras?.nombre
-      }));
+      const formattedData = data?.map(estudiante => ({
+        ...estudiante,
+        carrera: {
+          nombre: estudiante.carrera?.nombre || 'Sin carrera'
+        }
+      })) || [];
       
-      setEstudiantes(formattedEstudiantes);
+      setEstudiantes(formattedData);
+      setFilteredEstudiantes(formattedData);
     } catch (error) {
       console.error('Error al cargar estudiantes:', error);
       toast.error('Error al cargar estudiantes');
@@ -72,80 +110,54 @@ const Estudiantes: React.FC = () => {
     }
   };
 
-  const fetchCarreras = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('carreras')
-        .select('id, nombre');
-      
-      if (error) throw error;
-      setCarreras(data || []);
-    } catch (error) {
-      console.error('Error al cargar carreras:', error);
-    }
-  };
-
   useEffect(() => {
     fetchCarreras();
     fetchEstudiantes();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    // Filtrar por apellido, nombre o DNI
+    const filtered = estudiantes.filter(estudiante => 
+      estudiante.apellido.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      estudiante.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      estudiante.dni.includes(searchQuery)
+    );
+    setFilteredEstudiantes(filtered);
+  }, [searchQuery, estudiantes]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCarreraChange = (value: string) => {
+    setFormData(prev => ({ ...prev, carrera_id: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('estudiantes')
-        .insert([formData])
-        .select();
+        .insert([formData]);
       
       if (error) throw error;
       
-      toast.success('Estudiante agregado correctamente');
+      toast.success('Estudiante registrado exitosamente');
       setFormData({
         nombre: '',
         apellido: '',
         dni: '',
         email: '',
         fecha_ingreso: new Date().toISOString().split('T')[0],
-        carrera_id: ''
+        carrera_id: carreras.length > 0 ? carreras[0].id : ''
       });
-      
       fetchEstudiantes();
     } catch (error) {
-      console.error('Error al crear estudiante:', error);
-      toast.error('Error al crear estudiante');
+      console.error('Error al registrar estudiante:', error);
+      toast.error('Error al registrar estudiante');
     }
   };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('¿Está seguro de eliminar este estudiante? Esta acción no se puede deshacer.')) {
-      try {
-        const { error } = await supabase
-          .from('estudiantes')
-          .delete()
-          .eq('id', id);
-        
-        if (error) throw error;
-        
-        toast.success('Estudiante eliminado correctamente');
-        fetchEstudiantes();
-      } catch (error) {
-        console.error('Error al eliminar estudiante:', error);
-        toast.error('Error al eliminar estudiante');
-      }
-    }
-  };
-
-  const filteredEstudiantes = estudiantes.filter(estudiante => 
-    estudiante.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    estudiante.apellido.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    estudiante.dni.includes(searchQuery)
-  );
 
   return (
     <MainLayout userRole="admin" userName="Admin Demo">
@@ -153,9 +165,8 @@ const Estudiantes: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Estudiantes</h1>
-            <p className="text-muted-foreground">Administración de estudiantes</p>
+            <p className="text-muted-foreground">Gestión de datos de estudiantes</p>
           </div>
-          
           <Dialog>
             <DialogTrigger asChild>
               <Button>
@@ -165,9 +176,9 @@ const Estudiantes: React.FC = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[550px]">
               <DialogHeader>
-                <DialogTitle>Agregar Estudiante</DialogTitle>
+                <DialogTitle>Registrar Estudiante</DialogTitle>
                 <DialogDescription>
-                  Complete el formulario para agregar un nuevo estudiante
+                  Complete el formulario para registrar un nuevo estudiante
                 </DialogDescription>
               </DialogHeader>
               
@@ -175,22 +186,22 @@ const Estudiantes: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
-                    <Input 
-                      id="nombre" 
-                      name="nombre" 
-                      value={formData.nombre} 
-                      onChange={handleInputChange} 
-                      required 
+                    <Input
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="apellido">Apellido</Label>
-                    <Input 
-                      id="apellido" 
-                      name="apellido" 
-                      value={formData.apellido} 
-                      onChange={handleInputChange} 
-                      required 
+                    <Input
+                      id="apellido"
+                      name="apellido"
+                      value={formData.apellido}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
@@ -198,56 +209,56 @@ const Estudiantes: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="dni">DNI</Label>
-                    <Input 
-                      id="dni" 
-                      name="dni" 
-                      value={formData.dni} 
-                      onChange={handleInputChange} 
-                      required 
+                    <Input
+                      id="dni"
+                      name="dni"
+                      value={formData.dni}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email" 
-                      name="email" 
-                      type="email" 
-                      value={formData.email} 
-                      onChange={handleInputChange} 
-                      required 
+                    <Label htmlFor="fecha_ingreso">Fecha de Ingreso</Label>
+                    <Input
+                      id="fecha_ingreso"
+                      name="fecha_ingreso"
+                      type="date"
+                      value={formData.fecha_ingreso}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fecha_ingreso">Fecha de Ingreso</Label>
-                    <Input 
-                      id="fecha_ingreso" 
-                      name="fecha_ingreso" 
-                      type="date" 
-                      value={formData.fecha_ingreso} 
-                      onChange={handleInputChange} 
-                      required 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="carrera_id">Carrera</Label>
-                    <select
-                      id="carrera_id"
-                      name="carrera_id"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={formData.carrera_id}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Seleccione una carrera</option>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="carrera">Carrera</Label>
+                  <Select 
+                    value={formData.carrera_id} 
+                    onValueChange={handleCarreraChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una carrera" />
+                    </SelectTrigger>
+                    <SelectContent>
                       {carreras.map(carrera => (
-                        <option key={carrera.id} value={carrera.id}>
+                        <SelectItem key={carrera.id} value={carrera.id}>
                           {carrera.nombre}
-                        </option>
+                        </SelectItem>
                       ))}
-                    </select>
-                  </div>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <DialogFooter>
@@ -264,78 +275,56 @@ const Estudiantes: React.FC = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar por nombre, apellido o DNI..."
+            placeholder="Buscar por apellido, nombre o DNI..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Estudiante</TableHead>
-                  <TableHead>DNI</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Carrera</TableHead>
-                  <TableHead>Fecha Ingreso</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6">
-                      Cargando estudiantes...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredEstudiantes.length > 0 ? (
-                  filteredEstudiantes.map((estudiante) => (
-                    <TableRow key={estudiante.id}>
-                      <TableCell className="font-medium">
-                        {estudiante.apellido}, {estudiante.nombre}
-                      </TableCell>
-                      <TableCell>{estudiante.dni}</TableCell>
-                      <TableCell>{estudiante.email}</TableCell>
-                      <TableCell>{estudiante.carrera_nombre || '-'}</TableCell>
-                      <TableCell>
-                        {new Date(estudiante.fecha_ingreso).toLocaleDateString('es-AR')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            asChild
-                          >
-                            <Link to={`/estudiantes/${estudiante.id}`}>
-                              <Edit className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleDelete(estudiante.id)}
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6">
+        {loading ? (
+          <div className="text-center py-10">
+            <p>Cargando estudiantes...</p>
+          </div>
+        ) : (
+          <div className="border rounded-md overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50">
+                  <th className="py-3 px-4 text-left font-medium">Apellido y Nombre</th>
+                  <th className="py-3 px-4 text-left font-medium">DNI</th>
+                  <th className="py-3 px-4 text-left font-medium">Email</th>
+                  <th className="py-3 px-4 text-left font-medium">Carrera</th>
+                  <th className="py-3 px-4 text-left font-medium">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {filteredEstudiantes.map((estudiante) => (
+                  <tr key={estudiante.id} className="hover:bg-muted/30">
+                    <td className="py-3 px-4">{estudiante.apellido}, {estudiante.nombre}</td>
+                    <td className="py-3 px-4">{estudiante.dni}</td>
+                    <td className="py-3 px-4">{estudiante.email}</td>
+                    <td className="py-3 px-4">{estudiante.carrera?.nombre}</td>
+                    <td className="py-3 px-4">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/estudiantes/${estudiante.id}`}>
+                          Ver detalle
+                        </Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {filteredEstudiantes.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-muted-foreground">
                       No se encontraron estudiantes
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
