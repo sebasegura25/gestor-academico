@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -65,7 +64,7 @@ const Inscripciones: React.FC = () => {
     estudiante_id: '',
     materia_id: '',
     tipo: 'Cursada',
-    periodo: '1er Cuatrimestre 2025',
+    periodo: '',
     fecha: new Date().toISOString().split('T')[0]
   });
   const [currentEstudiante, setCurrentEstudiante] = useState<string>('');
@@ -108,7 +107,6 @@ const Inscripciones: React.FC = () => {
       setEstudiantes(data || []);
       setFilteredEstudiantes(data || []);
       
-      // Si hay estudiantes, seleccionar el primero por defecto
       if (data && data.length > 0) {
         setCurrentEstudiante(data[0].id);
         setFormData(prev => ({ ...prev, estudiante_id: data[0].id }));
@@ -144,7 +142,6 @@ const Inscripciones: React.FC = () => {
       
       if (error) throw error;
       
-      // Formatear los datos para asegurar que cumplen con la interfaz
       const formattedData = data?.map(inscripcion => ({
         id: inscripcion.id,
         estudiante_id: inscripcion.estudiante_id,
@@ -253,12 +250,11 @@ const Inscripciones: React.FC = () => {
       toast.success('Inscripción registrada correctamente');
       fetchInscripciones(currentEstudiante);
       
-      // Reiniciar el formulario
       setFormData(prev => ({
         ...prev,
         materia_id: '',
         tipo: 'Cursada',
-        periodo: '1er Cuatrimestre 2025',
+        periodo: '',
         fecha: new Date().toISOString().split('T')[0]
       }));
       setErrorCorrelativas([]);
@@ -274,7 +270,6 @@ const Inscripciones: React.FC = () => {
   };
   
   const getMateriasDisponibles = () => {
-    // Excluir materias ya inscriptas en el mismo período
     const materiasInscriptas = inscripciones
       .filter(i => i.periodo === formData.periodo && i.tipo === formData.tipo)
       .map(i => i.materia_id);
@@ -343,18 +338,14 @@ const Inscripciones: React.FC = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="periodo">Período</Label>
-                  <select
+                  <Input
                     id="periodo"
                     name="periodo"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    placeholder="Ej: 1er Cuatrimestre 2025"
                     value={formData.periodo}
                     onChange={handleInputChange}
                     required
-                  >
-                    <option value="1er Cuatrimestre 2025">1er Cuatrimestre 2025</option>
-                    <option value="2do Cuatrimestre 2025">2do Cuatrimestre 2025</option>
-                    <option value="Verano 2025">Verano 2025</option>
-                  </select>
+                  />
                 </div>
                 
                 <div className="space-y-2">
