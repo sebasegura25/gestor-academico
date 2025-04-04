@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Clock, Book, ExternalLink } from 'lucide-react';
+import { Clock, Book, ExternalLink, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CarreraCardProps {
@@ -12,6 +12,7 @@ interface CarreraCardProps {
   descripcion?: string;
   cantidadMaterias: number;
   planEstudioUrl?: string;
+  onEdit?: () => void;
 }
 
 const CarreraCard: React.FC<CarreraCardProps> = ({
@@ -20,12 +21,20 @@ const CarreraCard: React.FC<CarreraCardProps> = ({
   duracion,
   descripcion,
   cantidadMaterias,
-  planEstudioUrl
+  planEstudioUrl,
+  onEdit
 }) => {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">{nombre}</CardTitle>
+        <CardTitle className="text-lg flex items-center justify-between">
+          {nombre}
+          {onEdit && (
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onEdit}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <p className="text-sm text-muted-foreground mb-4">{descripcion}</p>

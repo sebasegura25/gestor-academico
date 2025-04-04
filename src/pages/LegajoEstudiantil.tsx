@@ -20,6 +20,7 @@ const datosEstudiante = {
 
 const materiasData = [
   {
+    id: "mat101",
     codigo: 'MAT101',
     nombre: 'Álgebra I',
     estado: 'Acreditada',
@@ -29,6 +30,7 @@ const materiasData = [
     cuatrimestre: 1
   },
   {
+    id: "prog101",
     codigo: 'PROG101',
     nombre: 'Programación I',
     estado: 'Acreditada',
@@ -38,6 +40,7 @@ const materiasData = [
     cuatrimestre: 1
   },
   {
+    id: "bd101",
     codigo: 'BD101',
     nombre: 'Bases de Datos',
     estado: 'Acreditada',
@@ -47,6 +50,7 @@ const materiasData = [
     cuatrimestre: 2
   },
   {
+    id: "eng101",
     codigo: 'ENG101',
     nombre: 'Inglés Técnico I',
     estado: 'Acreditada',
@@ -56,6 +60,7 @@ const materiasData = [
     cuatrimestre: 1
   },
   {
+    id: "mat201",
     codigo: 'MAT201',
     nombre: 'Análisis Matemático',
     estado: 'Regular',
@@ -64,6 +69,7 @@ const materiasData = [
     cuatrimestre: 2
   },
   {
+    id: "prog201",
     codigo: 'PROG201',
     nombre: 'Programación II',
     estado: 'Cursando',
@@ -71,6 +77,7 @@ const materiasData = [
     cuatrimestre: 1
   },
   {
+    id: "os101",
     codigo: 'OS101',
     nombre: 'Sistemas Operativos',
     estado: 'Libre',
@@ -78,6 +85,7 @@ const materiasData = [
     cuatrimestre: 1
   },
   {
+    id: "net101",
     codigo: 'NET101',
     nombre: 'Redes',
     estado: 'Cursando',
@@ -187,11 +195,14 @@ const LegajoEstudiantil: React.FC = () => {
                   {materiasData.map((materia, index) => (
                     <MateriaCard
                       key={index}
+                      id={materia.id}
                       codigo={materia.codigo}
                       nombre={materia.nombre}
-                      estado={materia.estado as any}
+                      estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
+                      year={materia.year}
+                      cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
                 </div>
@@ -202,11 +213,14 @@ const LegajoEstudiantil: React.FC = () => {
                   {materiasData.filter(m => m.estado === 'Acreditada').map((materia, index) => (
                     <MateriaCard
                       key={index}
+                      id={materia.id}
                       codigo={materia.codigo}
                       nombre={materia.nombre}
-                      estado={materia.estado as any}
+                      estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
+                      year={materia.year}
+                      cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
                 </div>
@@ -217,11 +231,14 @@ const LegajoEstudiantil: React.FC = () => {
                   {materiasData.filter(m => m.estado === 'Regular').map((materia, index) => (
                     <MateriaCard
                       key={index}
+                      id={materia.id}
                       codigo={materia.codigo}
                       nombre={materia.nombre}
-                      estado={materia.estado as any}
+                      estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
+                      year={materia.year}
+                      cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
                 </div>
@@ -232,11 +249,14 @@ const LegajoEstudiantil: React.FC = () => {
                   {materiasData.filter(m => m.estado === 'Cursando').map((materia, index) => (
                     <MateriaCard
                       key={index}
+                      id={materia.id}
                       codigo={materia.codigo}
                       nombre={materia.nombre}
-                      estado={materia.estado as any}
+                      estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
+                      year={materia.year}
+                      cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
                 </div>
@@ -247,11 +267,14 @@ const LegajoEstudiantil: React.FC = () => {
                   {materiasData.filter(m => m.estado === 'Libre').map((materia, index) => (
                     <MateriaCard
                       key={index}
+                      id={materia.id}
                       codigo={materia.codigo}
                       nombre={materia.nombre}
-                      estado={materia.estado as any}
+                      estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
+                      year={materia.year}
+                      cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
                 </div>

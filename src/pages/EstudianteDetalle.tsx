@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -85,7 +84,6 @@ const EstudianteDetalle: React.FC = () => {
         if (error) throw error;
         setEstudiante(data);
         
-        // Cargar estados académicos
         await fetchEstadosAcademicos();
       } catch (error) {
         console.error('Error al cargar estudiante:', error);
@@ -138,7 +136,6 @@ const EstudianteDetalle: React.FC = () => {
         
       if (error) throw error;
       
-      // Asegurémonos de que los datos tienen la forma correcta para el tipo EstadoAcademico
       const formattedData = data?.map(estado => ({
         id: estado.id,
         estudiante_id: estado.estudiante_id,
@@ -221,7 +218,6 @@ const EstudianteDetalle: React.FC = () => {
       toast.success('Estado académico agregado correctamente');
       await fetchEstadosAcademicos();
       
-      // Limpiar formulario
       setEstadoData({
         materia_id: '',
         estado: 'Cursando',
@@ -255,7 +251,6 @@ const EstudianteDetalle: React.FC = () => {
   };
   
   const filteredMaterias = materias.filter(materia => {
-    // Excluir materias que ya tienen un estado académico
     return !estadosAcademicos.some(estado => estado.materia_id === materia.id);
   });
   
@@ -547,23 +542,24 @@ const EstudianteDetalle: React.FC = () => {
               {estadosAcademicos.length > 0 ? (
                 estadosAcademicos.map(estado => {
                   let fecha = '';
-                  let nota = '';
+                  let nota = null;
                   
                   if (estado.estado === 'Regular' && estado.fecha_regularizacion) {
                     fecha = new Date(estado.fecha_regularizacion).toLocaleDateString('es-AR');
                   } else if (estado.estado === 'Acreditada' && estado.fecha_acreditacion) {
                     fecha = new Date(estado.fecha_acreditacion).toLocaleDateString('es-AR');
-                    if (estado.nota) nota = ` (${estado.nota})`;
+                    if (estado.nota) nota = estado.nota;
                   }
                   
                   return (
                     <div key={estado.id} className="relative">
                       <MateriaCard
+                        id={estado.materia.id}
                         codigo={estado.materia.codigo}
                         nombre={estado.materia.nombre}
                         estado={estado.estado}
                         fecha={fecha}
-                        nota={estado.nota}
+                        nota={nota}
                       />
                       <div className="absolute top-2 right-2">
                         <Button
