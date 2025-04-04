@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MateriaCard from '@/components/academico/MateriaCard';
@@ -71,7 +70,6 @@ const Materias: React.FC = () => {
       if (error) throw error;
       setCarreras(data || []);
       
-      // Si hay carreras, seleccionar la primera por defecto
       if (data && data.length > 0) {
         setFormData(prev => ({ ...prev, carrera_id: data[0].id }));
       }
@@ -137,7 +135,10 @@ const Materias: React.FC = () => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: name === 'cuatrimestre' && value === 'anual' ? 0 : value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,7 +158,7 @@ const Materias: React.FC = () => {
         year: 1,
         cuatrimestre: 1,
         horas: 4,
-        carrera_id: formData.carrera_id, // Mantener la carrera seleccionada
+        carrera_id: formData.carrera_id,
         docente: ''
       });
       fetchMaterias();
@@ -236,7 +237,7 @@ const Materias: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="cuatrimestre">Cuatrimestre</Label>
                     <Select 
-                      value={formData.cuatrimestre.toString()} 
+                      value={formData.cuatrimestre === 0 ? "anual" : formData.cuatrimestre.toString()} 
                       onValueChange={(value) => handleSelectChange('cuatrimestre', value)}
                     >
                       <SelectTrigger>
@@ -245,6 +246,7 @@ const Materias: React.FC = () => {
                       <SelectContent>
                         <SelectItem value="1">1° cuatrimestre</SelectItem>
                         <SelectItem value="2">2° cuatrimestre</SelectItem>
+                        <SelectItem value="anual">Anual</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
