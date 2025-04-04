@@ -44,7 +44,7 @@ const Dashboard: React.FC = () => {
     <MainLayout userRole="admin" userName="Admin Demo">
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Panel</h1>
           <p className="text-muted-foreground">Resumen del sistema académico</p>
         </div>
         

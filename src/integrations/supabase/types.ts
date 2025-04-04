@@ -9,7 +9,241 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      carreras: {
+        Row: {
+          created_at: string
+          descripcion: string | null
+          duracion: number
+          id: string
+          nombre: string
+        }
+        Insert: {
+          created_at?: string
+          descripcion?: string | null
+          duracion: number
+          id?: string
+          nombre: string
+        }
+        Update: {
+          created_at?: string
+          descripcion?: string | null
+          duracion?: number
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
+      correlatividades: {
+        Row: {
+          created_at: string
+          id: string
+          materia_id: string
+          materia_requerida_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          materia_id: string
+          materia_requerida_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          materia_id?: string
+          materia_requerida_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "correlatividades_materia_id_fkey"
+            columns: ["materia_id"]
+            isOneToOne: false
+            referencedRelation: "materias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correlatividades_materia_requerida_id_fkey"
+            columns: ["materia_requerida_id"]
+            isOneToOne: false
+            referencedRelation: "materias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estados_academicos: {
+        Row: {
+          created_at: string
+          estado: string
+          estudiante_id: string
+          fecha_acreditacion: string | null
+          fecha_regularizacion: string | null
+          id: string
+          materia_id: string
+          nota: number | null
+        }
+        Insert: {
+          created_at?: string
+          estado: string
+          estudiante_id: string
+          fecha_acreditacion?: string | null
+          fecha_regularizacion?: string | null
+          id?: string
+          materia_id: string
+          nota?: number | null
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          estudiante_id?: string
+          fecha_acreditacion?: string | null
+          fecha_regularizacion?: string | null
+          id?: string
+          materia_id?: string
+          nota?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estados_academicos_estudiante_id_fkey"
+            columns: ["estudiante_id"]
+            isOneToOne: false
+            referencedRelation: "estudiantes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estados_academicos_materia_id_fkey"
+            columns: ["materia_id"]
+            isOneToOne: false
+            referencedRelation: "materias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudiantes: {
+        Row: {
+          apellido: string
+          carrera_id: string | null
+          created_at: string
+          dni: string
+          email: string
+          fecha_ingreso: string
+          id: string
+          nombre: string
+        }
+        Insert: {
+          apellido: string
+          carrera_id?: string | null
+          created_at?: string
+          dni: string
+          email: string
+          fecha_ingreso: string
+          id?: string
+          nombre: string
+        }
+        Update: {
+          apellido?: string
+          carrera_id?: string | null
+          created_at?: string
+          dni?: string
+          email?: string
+          fecha_ingreso?: string
+          id?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudiantes_carrera_id_fkey"
+            columns: ["carrera_id"]
+            isOneToOne: false
+            referencedRelation: "carreras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inscripciones: {
+        Row: {
+          created_at: string
+          estudiante_id: string
+          fecha: string
+          id: string
+          materia_id: string
+          periodo: string
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          estudiante_id: string
+          fecha: string
+          id?: string
+          materia_id: string
+          periodo: string
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          estudiante_id?: string
+          fecha?: string
+          id?: string
+          materia_id?: string
+          periodo?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscripciones_estudiante_id_fkey"
+            columns: ["estudiante_id"]
+            isOneToOne: false
+            referencedRelation: "estudiantes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscripciones_materia_id_fkey"
+            columns: ["materia_id"]
+            isOneToOne: false
+            referencedRelation: "materias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materias: {
+        Row: {
+          carrera_id: string
+          codigo: string
+          created_at: string
+          cuatrimestre: number
+          horas: number
+          id: string
+          nombre: string
+          year: number
+        }
+        Insert: {
+          carrera_id: string
+          codigo: string
+          created_at?: string
+          cuatrimestre: number
+          horas: number
+          id?: string
+          nombre: string
+          year: number
+        }
+        Update: {
+          carrera_id?: string
+          codigo?: string
+          created_at?: string
+          cuatrimestre?: number
+          horas?: number
+          id?: string
+          nombre?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materias_carrera_id_fkey"
+            columns: ["carrera_id"]
+            isOneToOne: false
+            referencedRelation: "carreras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
