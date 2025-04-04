@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,13 +63,27 @@ const Correlatividades: React.FC = () => {
           id,
           materia_id,
           materia_requerida_id,
-          materia:materia_id(id, codigo, nombre, carrera_id),
-          materia_requerida:materia_requerida_id(id, codigo, nombre)
+          materia:materias!materia_id(codigo, nombre),
+          materia_requerida:materias!materia_requerida_id(codigo, nombre)
         `);
       
       if (correlativasError) throw correlativasError;
       
-      setCorrelatividades(correlativasData);
+      const formattedData = correlativasData.map(c => ({
+        id: c.id,
+        materia_id: c.materia_id,
+        materia_requerida_id: c.materia_requerida_id,
+        materia: {
+          codigo: c.materia?.codigo || '',
+          nombre: c.materia?.nombre || ''
+        },
+        materia_requerida: {
+          codigo: c.materia_requerida?.codigo || '',
+          nombre: c.materia_requerida?.nombre || ''
+        }
+      }));
+      
+      setCorrelatividades(formattedData);
     } catch (error) {
       console.error('Error al cargar correlatividades:', error);
       toast.error('Error al cargar correlatividades');
@@ -87,7 +100,6 @@ const Correlatividades: React.FC = () => {
       
       if (materiasError) throw materiasError;
       
-      // Transformar los datos para incluir el nombre de la carrera
       const formattedMaterias = materiasData.map(mat => ({
         ...mat,
         carrera_nombre: mat.carreras?.nombre
@@ -128,7 +140,6 @@ const Correlatividades: React.FC = () => {
     const materiasDeCarrera = materias.filter(m => m.carrera_id === carreraId);
     setFilteredMaterias(materiasDeCarrera);
     
-    // Resetear selección de materias
     setFormData(prev => ({
       ...prev,
       carrera_id: carreraId,

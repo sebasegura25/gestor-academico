@@ -133,11 +133,28 @@ const EstudianteDetalle: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('estados_academicos')
-        .select('*, materia:materia_id(id, codigo, nombre)')
+        .select('*, materia:materias!materia_id(id, codigo, nombre)')
         .eq('estudiante_id', id);
         
       if (error) throw error;
-      setEstadosAcademicos(data || []);
+      
+      // Asegurémonos de que los datos tienen la forma correcta para el tipo EstadoAcademico
+      const formattedData = data?.map(estado => ({
+        id: estado.id,
+        estudiante_id: estado.estudiante_id,
+        materia_id: estado.materia_id,
+        estado: estado.estado as 'Cursando' | 'Regular' | 'Acreditada' | 'Libre',
+        fecha_regularizacion: estado.fecha_regularizacion,
+        fecha_acreditacion: estado.fecha_acreditacion,
+        nota: estado.nota,
+        materia: {
+          id: estado.materia?.id || '',
+          codigo: estado.materia?.codigo || '',
+          nombre: estado.materia?.nombre || ''
+        }
+      })) || [];
+      
+      setEstadosAcademicos(formattedData);
     } catch (error) {
       console.error('Error al cargar estados académicos:', error);
     }

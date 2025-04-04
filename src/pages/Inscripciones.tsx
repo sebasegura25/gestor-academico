@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -122,11 +121,26 @@ const Inscripciones: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('inscripciones')
-        .select('*, materia:materia_id(codigo, nombre)')
+        .select('*, materia:materias!materia_id(codigo, nombre)')
         .eq('estudiante_id', estudianteId);
       
       if (error) throw error;
-      setInscripciones(data || []);
+      
+      // Formatear los datos para asegurar que cumplen con la interfaz
+      const formattedData = data?.map(inscripcion => ({
+        id: inscripcion.id,
+        estudiante_id: inscripcion.estudiante_id,
+        materia_id: inscripcion.materia_id,
+        tipo: inscripcion.tipo as 'Cursada' | 'Examen',
+        periodo: inscripcion.periodo,
+        fecha: inscripcion.fecha,
+        materia: {
+          codigo: inscripcion.materia?.codigo || '',
+          nombre: inscripcion.materia?.nombre || ''
+        }
+      })) || [];
+      
+      setInscripciones(formattedData);
     } catch (error) {
       console.error('Error al cargar inscripciones:', error);
     }

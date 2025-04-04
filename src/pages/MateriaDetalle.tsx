@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -58,19 +57,30 @@ const MateriaDetalle: React.FC = () => {
         if (error) throw error;
         setMateria(data);
         
-        // Cargar correlatividades
         const { data: correlativasData, error: correlativasError } = await supabase
           .from('correlatividades')
           .select(`
             id,
             materia_id,
             materia_requerida_id,
-            materia_requerida:materia_requerida_id(id, codigo, nombre)
+            materia_requerida:materias!materia_requerida_id(id, codigo, nombre)
           `)
           .eq('materia_id', id);
           
         if (correlativasError) throw correlativasError;
-        setCorrelatividades(correlativasData || []);
+        
+        const formattedData = correlativasData?.map(corr => ({
+          id: corr.id,
+          materia_id: corr.materia_id,
+          materia_requerida_id: corr.materia_requerida_id,
+          materia_requerida: {
+            id: corr.materia_requerida?.id || '',
+            codigo: corr.materia_requerida?.codigo || '',
+            nombre: corr.materia_requerida?.nombre || ''
+          }
+        })) || [];
+        
+        setCorrelatividades(formattedData);
       } catch (error) {
         console.error('Error al cargar materia:', error);
         toast.error('Error al cargar los datos de la materia');

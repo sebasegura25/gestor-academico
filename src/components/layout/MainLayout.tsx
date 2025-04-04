@@ -9,14 +9,14 @@ import { useMediaQuery } from '@/hooks/use-mobile';
 interface MainLayoutProps {
   children: ReactNode;
   className?: string;
-  userRole?: string;
+  userRole?: 'admin' | 'docente' | 'estudiante';
   userName?: string;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   className,
-  userRole = 'user',
+  userRole = 'admin',
   userName = 'Usuario'
 }) => {
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -35,7 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             <h2 className="text-xl font-semibold text-slate-900">Panel Académico</h2>
             <p className="text-sm text-slate-500 mt-1">Gestión de estudiantes</p>
           </div>
-          <NavLinks />
+          <NavLinks userRole={userRole} />
         </aside>
         
         {/* Main content */}
