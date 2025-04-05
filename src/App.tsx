@@ -3,7 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Dashboard from "./pages/Dashboard";
 import Carreras from "./pages/Carreras";
 import Estudiantes from "./pages/Estudiantes";
@@ -15,8 +17,44 @@ import EstudianteDetalle from "./pages/EstudianteDetalle";
 import CarreraDetalle from "./pages/CarreraDetalle";
 import MateriaDetalle from "./pages/MateriaDetalle";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
+
+// Protected route component
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setAuthenticated(!!data.session);
+      setLoading(false);
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setAuthenticated(!!session);
+        setLoading(false);
+      }
+    );
+    
+    return () => subscription.unsubscribe();
+  }, []);
+  
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+  
+  if (!authenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  return children;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,16 +63,57 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/carreras" element={<Carreras />} />
-          <Route path="/carreras/:id" element={<CarreraDetalle />} />
-          <Route path="/estudiantes" element={<Estudiantes />} />
-          <Route path="/estudiantes/:id" element={<EstudianteDetalle />} />
-          <Route path="/materias" element={<Materias />} />
-          <Route path="/materias/:id" element={<MateriaDetalle />} />
-          <Route path="/inscripciones" element={<Inscripciones />} />
-          <Route path="/correlatividades" element={<Correlatividades />} />
-          <Route path="/legajo" element={<LegajoEstudiantil />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/carreras" element={
+            <ProtectedRoute>
+              <Carreras />
+            </ProtectedRoute>
+          } />
+          <Route path="/carreras/:id" element={
+            <ProtectedRoute>
+              <CarreraDetalle />
+            </ProtectedRoute>
+          } />
+          <Route path="/estudiantes" element={
+            <ProtectedRoute>
+              <Estudiantes />
+            </ProtectedRoute>
+          } />
+          <Route path="/estudiantes/:id" element={
+            <ProtectedRoute>
+              <EstudianteDetalle />
+            </ProtectedRoute>
+          } />
+          <Route path="/materias" element={
+            <ProtectedRoute>
+              <Materias />
+            </ProtectedRoute>
+          } />
+          <Route path="/materias/:id" element={
+            <ProtectedRoute>
+              <MateriaDetalle />
+            </ProtectedRoute>
+          } />
+          <Route path="/inscripciones" element={
+            <ProtectedRoute>
+              <Inscripciones />
+            </ProtectedRoute>
+          } />
+          <Route path="/correlatividades" element={
+            <ProtectedRoute>
+              <Correlatividades />
+            </ProtectedRoute>
+          } />
+          <Route path="/legajo" element={
+            <ProtectedRoute>
+              <LegajoEstudiantil />
+            </ProtectedRoute>
+          } />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
