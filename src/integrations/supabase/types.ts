@@ -16,6 +16,7 @@ export type Database = {
           duracion: number
           id: string
           nombre: string
+          plan_estudio_url: string | null
         }
         Insert: {
           created_at?: string
@@ -23,6 +24,7 @@ export type Database = {
           duracion: number
           id?: string
           nombre: string
+          plan_estudio_url?: string | null
         }
         Update: {
           created_at?: string
@@ -30,6 +32,7 @@ export type Database = {
           duracion?: number
           id?: string
           nombre?: string
+          plan_estudio_url?: string | null
         }
         Relationships: []
       }
@@ -212,7 +215,7 @@ export type Database = {
           horas: number
           id: string
           nombre: string
-          year: number
+          semestre: number
         }
         Insert: {
           carrera_id: string
@@ -222,7 +225,7 @@ export type Database = {
           horas: number
           id?: string
           nombre: string
-          year: number
+          semestre: number
         }
         Update: {
           carrera_id?: string
@@ -232,7 +235,7 @@ export type Database = {
           horas?: number
           id?: string
           nombre?: string
-          year?: number
+          semestre?: number
         }
         Relationships: [
           {

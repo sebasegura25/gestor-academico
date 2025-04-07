@@ -17,7 +17,7 @@ interface Materia {
   id: string;
   codigo: string;
   nombre: string;
-  year: number;
+  semestre: number;
   cuatrimestre: number;
   carrera_id: string;
 }
@@ -90,9 +90,9 @@ const Correlatividades: React.FC = () => {
       
       const { data, error } = await supabase
         .from('materias')
-        .select('id, codigo, nombre, year, cuatrimestre, carrera_id')
+        .select('id, codigo, nombre, semestre, cuatrimestre, carrera_id')
         .eq('carrera_id', carreraId)
-        .order('year')
+        .order('semestre')
         .order('cuatrimestre')
         .order('nombre');
       
@@ -153,8 +153,8 @@ const Correlatividades: React.FC = () => {
   };
   
   // Agrupar materias por año y cuatrimestre
-  const materiasPorAnioCuatrimestre = materias.reduce((acc, materia) => {
-    const key = `${materia.year}-${materia.cuatrimestre}`;
+  const materiasPorSemestreCuatrimestre = materias.reduce((acc, materia) => {
+    const key = `${materia.semestre}-${materia.cuatrimestre}`;
     if (!acc[key]) {
       acc[key] = [];
     }
@@ -171,8 +171,8 @@ const Correlatividades: React.FC = () => {
     setSelectedCarrera(carreraId);
   };
   
-  // Ordenar años y cuatrimestres
-  const aniosCuatrimestres = Object.keys(materiasPorAnioCuatrimestre).sort();
+  // Ordenar semestres y cuatrimestres
+  const semestresCuatrimestres = Object.keys(materiasPorSemestreCuatrimestre).sort();
   
   return (
     <MainLayout>
@@ -208,15 +208,15 @@ const Correlatividades: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {aniosCuatrimestres.map(key => {
-              const [anio, cuatrimestre] = key.split('-');
+            {semestresCuatrimestres.map(key => {
+              const [semestre, cuatrimestre] = key.split('-');
               return (
                 <div key={key}>
                   <h2 className="text-lg font-semibold mb-4">
-                    {anio}° año - {cuatrimestre}° cuatrimestre
+                    {semestre}° semestre - {cuatrimestre}° cuatrimestre
                   </h2>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {materiasPorAnioCuatrimestre[key].map(materia => {
+                    {materiasPorSemestreCuatrimestre[key].map(materia => {
                       const correlativas = getCorrelatividades(materia.id);
                       return (
                         <Card key={materia.id} className="h-full">
