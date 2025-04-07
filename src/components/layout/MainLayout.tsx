@@ -108,10 +108,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
               variant="floating"
             >
               <SidebarHeader>
-                <div className="p-4">
-                  <h2 className="text-xl font-semibold text-slate-900">Panel Académico</h2>
-                  <p className="text-sm text-slate-500 mt-1">Gestión de estudiantes</p>
-                </div>
+                <h2 className="text-xl font-semibold text-slate-900">Panel Académico</h2>
+                <p className="text-sm text-slate-500 mt-1">Gestión de estudiantes</p>
               </SidebarHeader>
               
               <SidebarContent>
