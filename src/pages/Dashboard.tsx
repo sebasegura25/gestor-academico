@@ -198,7 +198,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <MainLayout userRole="admin" userName={session?.user?.email?.split('@')[0] || 'Admin'}>
+    <MainLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Panel</h1>
