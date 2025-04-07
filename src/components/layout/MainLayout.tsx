@@ -99,7 +99,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         <div className="flex flex-1 bg-slate-100">
           {/* Sidebar with hover behavior */}
           <div 
-            className="relative z-20"
+            className="relative z-20 h-full"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
