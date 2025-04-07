@@ -278,7 +278,7 @@ const Inscripciones: React.FC = () => {
   };
   
   return (
-    <MainLayout userRole="admin" userName="Admin Demo">
+    <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>

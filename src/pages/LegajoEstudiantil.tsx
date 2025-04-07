@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MateriaCard from '@/components/academico/MateriaCard';
@@ -96,7 +95,7 @@ const materiasData = [
 
 const LegajoEstudiantil: React.FC = () => {
   return (
-    <MainLayout userRole="estudiante" userName={datosEstudiante.nombre}>
+    <MainLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Mi Legajo Académico</h1>

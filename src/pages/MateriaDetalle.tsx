@@ -140,7 +140,7 @@ const MateriaDetalle: React.FC = () => {
   
   if (loading) {
     return (
-      <MainLayout userRole="admin" userName="Admin Demo">
+      <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center">
             <Button
@@ -162,7 +162,7 @@ const MateriaDetalle: React.FC = () => {
   
   if (!materia) {
     return (
-      <MainLayout userRole="admin" userName="Admin Demo">
+      <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center">
             <Button
@@ -183,7 +183,7 @@ const MateriaDetalle: React.FC = () => {
   }
   
   return (
-    <MainLayout userRole="admin" userName="Admin Demo">
+    <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center">

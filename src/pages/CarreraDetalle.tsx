@@ -107,7 +107,7 @@ const CarreraDetalle: React.FC = () => {
   
   if (loading) {
     return (
-      <MainLayout userRole="admin" userName="Admin Demo">
+      <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center">
             <Button
@@ -129,7 +129,7 @@ const CarreraDetalle: React.FC = () => {
   
   if (!carrera) {
     return (
-      <MainLayout userRole="admin" userName="Admin Demo">
+      <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center">
             <Button
@@ -150,7 +150,7 @@ const CarreraDetalle: React.FC = () => {
   }
   
   return (
-    <MainLayout userRole="admin" userName="Admin Demo">
+    <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center">

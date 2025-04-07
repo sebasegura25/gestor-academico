@@ -175,7 +175,7 @@ const Correlatividades: React.FC = () => {
   const aniosCuatrimestres = Object.keys(materiasPorAnioCuatrimestre).sort();
   
   return (
-    <MainLayout userRole="admin" userName="Admin Demo">
+    <MainLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Correlatividades</h1>

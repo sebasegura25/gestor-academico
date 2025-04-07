@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -69,7 +68,6 @@ const Estudiantes: React.FC = () => {
       if (error) throw error;
       setCarreras(data || []);
       
-      // Si hay carreras, seleccionar la primera por defecto
       if (data && data.length > 0) {
         setFormData(prev => ({ ...prev, carrera_id: data[0].id }));
       }
@@ -116,7 +114,6 @@ const Estudiantes: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Filtrar por apellido, nombre o DNI
     const filtered = estudiantes.filter(estudiante => 
       estudiante.apellido.toLowerCase().includes(searchQuery.toLowerCase()) || 
       estudiante.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,7 +157,7 @@ const Estudiantes: React.FC = () => {
   };
 
   return (
-    <MainLayout userRole="admin" userName="Admin Demo">
+    <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
