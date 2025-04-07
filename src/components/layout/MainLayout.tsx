@@ -35,7 +35,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const { toast } = useToast();
   const location = useLocation();
+  const [sidebarHovered, setSidebarHovered] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
+
+  // Timer reference for hover delay
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Show welcome toast on dashboard
   React.useEffect(() => {
@@ -45,6 +49,35 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       });
     }
   }, [location.pathname, toast]);
+
+  // Handle mouse enter with delay
+  const handleMouseEnter = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    setSidebarHovered(true);
+    setShowSidebar(true);
+  };
+
+  // Handle mouse leave with delay
+  const handleMouseLeave = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      setSidebarHovered(false);
+      setShowSidebar(false);
+    }, 300); // Short delay before hiding
+  };
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const links = [
     { to: '/', label: 'Panel', icon: <Home className="h-4 w-4" />, roles: ['admin', 'docente', 'estudiante'] },
@@ -64,42 +97,48 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         <Header userRole={userRole} userName={userName} />
         
         <div className="flex flex-1 bg-slate-100">
-          {/* Regular sidebar without hover behavior */}
-          <Sidebar 
-            collapsible="none" 
-            variant="floating"
+          {/* Sidebar with hover behavior */}
+          <div 
+            className="relative z-20"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           >
-            <SidebarHeader>
-              <div className="p-4">
-                <h2 className="text-xl font-semibold text-slate-900">Panel Académico</h2>
-                <p className="text-sm text-slate-500 mt-1">Gestión de estudiantes</p>
-              </div>
-            </SidebarHeader>
-            
-            <SidebarContent>
-              <SidebarGroup>
-                <SidebarGroupLabel>Navegación</SidebarGroupLabel>
-                <SidebarMenu>
-                  {filteredLinks.map((link) => (
-                    <SidebarMenuItem key={link.to}>
-                      <SidebarMenuButton 
-                        asChild
-                        isActive={location.pathname === link.to}
-                        tooltip={link.label}
-                      >
-                        <Link to={link.to}>
-                          {link.icon}
-                          <span>{link.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroup>
-            </SidebarContent>
-            
-            <SidebarRail />
-          </Sidebar>
+            <Sidebar 
+              collapsible={sidebarHovered ? "none" : "icon"} 
+              variant="floating"
+            >
+              <SidebarHeader>
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold text-slate-900">Panel Académico</h2>
+                  <p className="text-sm text-slate-500 mt-1">Gestión de estudiantes</p>
+                </div>
+              </SidebarHeader>
+              
+              <SidebarContent>
+                <SidebarGroup>
+                  <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+                  <SidebarMenu>
+                    {filteredLinks.map((link) => (
+                      <SidebarMenuItem key={link.to}>
+                        <SidebarMenuButton 
+                          asChild
+                          isActive={location.pathname === link.to}
+                          tooltip={link.label}
+                        >
+                          <Link to={link.to}>
+                            {link.icon}
+                            <span>{link.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroup>
+              </SidebarContent>
+              
+              <SidebarRail />
+            </Sidebar>
+          </div>
 
           {/* Main content */}
           <main className={cn("flex-1 bg-white", className)}>
