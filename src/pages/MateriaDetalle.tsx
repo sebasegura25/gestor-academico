@@ -198,7 +198,7 @@ const MateriaDetalle: React.FC = () => {
             </Button>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">{materia.codigo} - {materia.nombre}</h1>
-              <p className="text-muted-foreground">Año {materia.year}, Cuatrimestre {materia.cuatrimestre}</p>
+              <p className="text-muted-foreground">Año {materia.semestre}, Cuatrimestre {materia.cuatrimestre}</p>
             </div>
           </div>
           <Button onClick={handleGuardar}>
@@ -237,14 +237,14 @@ const MateriaDetalle: React.FC = () => {
                 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="year">Año</Label>
+                    <Label htmlFor="semestre">Año</Label>
                     <Input
-                      id="year"
-                      name="year"
+                      id="semestre"
+                      name="semestre"
                       type="number"
                       min="1"
                       max="6"
-                      value={materia.year}
+                      value={materia.semestre}
                       onChange={handleInputChange}
                     />
                   </div>

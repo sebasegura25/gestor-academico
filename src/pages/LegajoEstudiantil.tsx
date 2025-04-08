@@ -25,7 +25,7 @@ const materiasData = [
     estado: 'Acreditada',
     fecha: '15/12/2023',
     nota: 8,
-    year: 1,
+    semestre: 1,
     cuatrimestre: 1
   },
   {
@@ -35,7 +35,7 @@ const materiasData = [
     estado: 'Acreditada',
     fecha: '20/07/2023',
     nota: 9,
-    year: 1,
+    semestre: 1,
     cuatrimestre: 1
   },
   {
@@ -45,7 +45,7 @@ const materiasData = [
     estado: 'Acreditada',
     fecha: '18/12/2023',
     nota: 7,
-    year: 1,
+    semestre: 1,
     cuatrimestre: 2
   },
   {
@@ -55,7 +55,7 @@ const materiasData = [
     estado: 'Acreditada',
     fecha: '12/07/2023',
     nota: 8,
-    year: 1,
+    semestre: 1,
     cuatrimestre: 1
   },
   {
@@ -64,7 +64,7 @@ const materiasData = [
     nombre: 'Análisis Matemático',
     estado: 'Regular',
     fecha: '10/12/2024',
-    year: 1,
+    semestre: 1,
     cuatrimestre: 2
   },
   {
@@ -72,7 +72,7 @@ const materiasData = [
     codigo: 'PROG201',
     nombre: 'Programación II',
     estado: 'Cursando',
-    year: 2,
+    semestre: 2,
     cuatrimestre: 1
   },
   {
@@ -80,7 +80,7 @@ const materiasData = [
     codigo: 'OS101',
     nombre: 'Sistemas Operativos',
     estado: 'Libre',
-    year: 2,
+    semestre: 2,
     cuatrimestre: 1
   },
   {
@@ -88,7 +88,7 @@ const materiasData = [
     codigo: 'NET101',
     nombre: 'Redes',
     estado: 'Cursando',
-    year: 2,
+    semestre: 2,
     cuatrimestre: 1
   },
 ];
@@ -200,7 +200,7 @@ const LegajoEstudiantil: React.FC = () => {
                       estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
-                      year={materia.year}
+                      semestre={materia.semestre}
                       cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
@@ -218,7 +218,7 @@ const LegajoEstudiantil: React.FC = () => {
                       estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
-                      year={materia.year}
+                      semestre={materia.semestre}
                       cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
@@ -236,7 +236,7 @@ const LegajoEstudiantil: React.FC = () => {
                       estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
-                      year={materia.year}
+                      semestre={materia.semestre}
                       cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
@@ -254,7 +254,7 @@ const LegajoEstudiantil: React.FC = () => {
                       estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
-                      year={materia.year}
+                      semestre={materia.semestre}
                       cuatrimestre={materia.cuatrimestre}
                     />
                   ))}
@@ -272,7 +272,7 @@ const LegajoEstudiantil: React.FC = () => {
                       estado={materia.estado as 'Acreditada' | 'Regular' | 'Cursando' | 'Libre'}
                       fecha={materia.fecha}
                       nota={materia.nota}
-                      year={materia.year}
+                      semestre={materia.semestre}
                       cuatrimestre={materia.cuatrimestre}
                     />
                   ))}

@@ -23,9 +23,10 @@ interface Materia {
   id: string;
   codigo: string;
   nombre: string;
-  year: number;
+  semestre: number;
   cuatrimestre: number;
   carrera_id: string;
+  horas: number;
 }
 
 interface EstadoAcademico {
@@ -60,6 +61,7 @@ const Inscripciones: React.FC = () => {
   const [estadosAcademicos, setEstadosAcademicos] = useState<EstadoAcademico[]>([]);
   const [correlatividades, setCorrelatividades] = useState<Correlatividad[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMaterias, setLoadingMaterias] = useState(true);
   const [formData, setFormData] = useState({
     estudiante_id: '',
     materia_id: '',
@@ -119,17 +121,22 @@ const Inscripciones: React.FC = () => {
   
   const fetchMaterias = async () => {
     try {
+      setLoadingMaterias(true);
       const { data, error } = await supabase
         .from('materias')
-        .select('*');
+        .select('id, codigo, nombre, semestre, cuatrimestre, carrera_id, horas')
+        .order('semestre')
+        .order('cuatrimestre')
+        .order('nombre');
       
       if (error) throw error;
+      
       setMaterias(data || []);
     } catch (error) {
       console.error('Error al cargar materias:', error);
-      toast.error('Error al cargar materias');
+      toast.error('Error al cargar las materias disponibles');
     } finally {
-      setLoading(false);
+      setLoadingMaterias(false);
     }
   };
   
