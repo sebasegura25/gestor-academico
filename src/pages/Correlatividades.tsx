@@ -88,7 +88,8 @@ const Correlatividades: React.FC = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      // Intenta primero con 'semestre' (nueva nomenclatura)
+      let query = supabase
         .from('materias')
         .select('id, codigo, nombre, semestre, cuatrimestre, carrera_id')
         .eq('carrera_id', carreraId)
@@ -96,13 +97,33 @@ const Correlatividades: React.FC = () => {
         .order('cuatrimestre')
         .order('nombre');
       
-      if (error) throw error;
+      let { data, error } = await query;
+      
+      if (error) {
+        console.error('Error al cargar con semestre, intentando con year:', error);
+        
+        // Si falla, intentamos con 'year' (nomenclatura anterior)
+        query = supabase
+          .from('materias')
+          .select('id, codigo, nombre, year as semestre, cuatrimestre, carrera_id')
+          .eq('carrera_id', carreraId)
+          .order('year')
+          .order('cuatrimestre')
+          .order('nombre');
+        
+        const response = await query;
+        data = response.data;
+        error = response.error;
+        
+        if (error) throw error;
+      }
       
       setMaterias(data || []);
       fetchCorrelatividades(data?.map(m => m.id) || []);
     } catch (error) {
       console.error('Error al cargar materias:', error);
       toast.error('Error al cargar materias');
+      setLoading(false);
     }
   };
   
@@ -152,7 +173,7 @@ const Correlatividades: React.FC = () => {
     }
   };
   
-  // Agrupar materias por año y cuatrimestre
+  // Agrupar materias por semestre y cuatrimestre
   const materiasPorSemestreCuatrimestre = materias.reduce((acc, materia) => {
     const key = `${materia.semestre}-${materia.cuatrimestre}`;
     if (!acc[key]) {
