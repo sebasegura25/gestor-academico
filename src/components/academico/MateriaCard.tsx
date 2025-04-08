@@ -10,7 +10,7 @@ interface MateriaCardProps {
   id?: string;
   codigo: string;
   nombre: string;
-  year?: number;
+  semestre?: number;
   cuatrimestre?: number;
   horas?: number;
   carrera?: string;
@@ -24,7 +24,7 @@ const MateriaCard: React.FC<MateriaCardProps> = ({
   id, 
   codigo, 
   nombre, 
-  year, 
+  semestre, 
   cuatrimestre, 
   horas, 
   carrera,
@@ -84,10 +84,10 @@ const MateriaCard: React.FC<MateriaCardProps> = ({
         )}
       </CardHeader>
       <CardContent className="flex-1 space-y-2">
-        {(year && cuatrimestre) && (
+        {(semestre && cuatrimestre) && (
           <div className="flex justify-between">
             <div className="text-sm text-muted-foreground">
-              {year}° año - {cuatrimestre}° cuatrimestre
+              {semestre}° año - {cuatrimestre}° cuatrimestre
             </div>
             {horas && (
               <div className="flex items-center text-sm text-muted-foreground">

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -34,7 +35,7 @@ interface Materia {
   id: string;
   codigo: string;
   nombre: string;
-  year: number;
+  semestre: number;
   cuatrimestre: number;
 }
 

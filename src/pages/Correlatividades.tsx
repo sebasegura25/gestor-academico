@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { 
@@ -88,8 +87,7 @@ const Correlatividades: React.FC = () => {
     try {
       setLoading(true);
       
-      // Intenta primero con 'semestre' (nueva nomenclatura)
-      let query = supabase
+      const { data, error } = await supabase
         .from('materias')
         .select('id, codigo, nombre, semestre, cuatrimestre, carrera_id')
         .eq('carrera_id', carreraId)
@@ -97,26 +95,7 @@ const Correlatividades: React.FC = () => {
         .order('cuatrimestre')
         .order('nombre');
       
-      let { data, error } = await query;
-      
-      if (error) {
-        console.error('Error al cargar con semestre, intentando con year:', error);
-        
-        // Si falla, intentamos con 'year' (nomenclatura anterior)
-        query = supabase
-          .from('materias')
-          .select('id, codigo, nombre, year as semestre, cuatrimestre, carrera_id')
-          .eq('carrera_id', carreraId)
-          .order('year')
-          .order('cuatrimestre')
-          .order('nombre');
-        
-        const response = await query;
-        data = response.data;
-        error = response.error;
-        
-        if (error) throw error;
-      }
+      if (error) throw error;
       
       setMaterias(data || []);
       fetchCorrelatividades(data?.map(m => m.id) || []);
@@ -148,7 +127,6 @@ const Correlatividades: React.FC = () => {
       
       if (error) throw error;
       
-      // Formatear los datos para asegurar que cumplen con la interfaz
       const formattedData = data?.map(item => ({
         id: item.id,
         materia_id: item.materia_id,
@@ -173,7 +151,6 @@ const Correlatividades: React.FC = () => {
     }
   };
   
-  // Agrupar materias por semestre y cuatrimestre
   const materiasPorSemestreCuatrimestre = materias.reduce((acc, materia) => {
     const key = `${materia.semestre}-${materia.cuatrimestre}`;
     if (!acc[key]) {
@@ -183,7 +160,6 @@ const Correlatividades: React.FC = () => {
     return acc;
   }, {} as Record<string, Materia[]>);
   
-  // Obtener correlatividades para una materia
   const getCorrelatividades = (materiaId: string) => {
     return correlatividades.filter(c => c.materia_id === materiaId);
   };
@@ -192,7 +168,6 @@ const Correlatividades: React.FC = () => {
     setSelectedCarrera(carreraId);
   };
   
-  // Ordenar semestres y cuatrimestres
   const semestresCuatrimestres = Object.keys(materiasPorSemestreCuatrimestre).sort();
   
   return (

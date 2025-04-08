@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -24,7 +23,7 @@ interface Materia {
   id: string;
   codigo: string;
   nombre: string;
-  year: number;
+  semestre: number;
   cuatrimestre: number;
   horas: number;
 }
@@ -55,7 +54,7 @@ const CarreraDetalle: React.FC = () => {
           .from('materias')
           .select('*')
           .eq('carrera_id', id)
-          .order('year', { ascending: true })
+          .order('semestre', { ascending: true })
           .order('cuatrimestre', { ascending: true });
           
         if (materiasError) throw materiasError;
@@ -101,8 +100,8 @@ const CarreraDetalle: React.FC = () => {
     }
   };
   
-  const getMateriasByYear = (year: number) => {
-    return materias.filter(m => m.year === year);
+  const getMateriasBySemestre = (semestre: number) => {
+    return materias.filter(m => m.semestre === semestre);
   };
   
   if (loading) {
@@ -226,7 +225,7 @@ const CarreraDetalle: React.FC = () => {
             {materias.length > 0 ? (
               Array.from({ length: carrera.duracion }).map((_, index) => {
                 const year = index + 1;
-                const materiasYear = getMateriasByYear(year);
+                const materiasYear = getMateriasBySemestre(year);
                 
                 if (materiasYear.length === 0) return null;
                 

@@ -29,7 +29,7 @@ interface Materia {
   id: string;
   codigo: string;
   nombre: string;
-  year: number;
+  semestre: number;
   cuatrimestre: number;
   horas: number;
   carrera_id: string;
@@ -53,7 +53,7 @@ const Materias: React.FC = () => {
   const [formData, setFormData] = useState({
     codigo: '',
     nombre: '',
-    year: 1,
+    semestre: 1,
     cuatrimestre: 1,
     horas: 4,
     carrera_id: '',
@@ -88,7 +88,7 @@ const Materias: React.FC = () => {
           *,
           carrera:carreras(nombre)
         `)
-        .order('year')
+        .order('semestre')
         .order('cuatrimestre')
         .order('nombre');
       
@@ -128,7 +128,7 @@ const Materias: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'year' || name === 'cuatrimestre' || name === 'horas'
+      [name]: name === 'semestre' || name === 'cuatrimestre' || name === 'horas'
         ? parseInt(value)
         : value
     }));
@@ -145,9 +145,19 @@ const Materias: React.FC = () => {
     e.preventDefault();
     
     try {
+      const dataToSubmit = {
+        codigo: formData.codigo,
+        nombre: formData.nombre,
+        semestre: formData.semestre,
+        cuatrimestre: formData.cuatrimestre,
+        horas: formData.horas,
+        carrera_id: formData.carrera_id,
+        docente: formData.docente
+      };
+      
       const { error } = await supabase
         .from('materias')
-        .insert([formData]);
+        .insert([dataToSubmit]);
       
       if (error) throw error;
       
@@ -155,7 +165,7 @@ const Materias: React.FC = () => {
       setFormData({
         codigo: '',
         nombre: '',
-        year: 1,
+        semestre: 1,
         cuatrimestre: 1,
         horas: 4,
         carrera_id: formData.carrera_id,
@@ -217,20 +227,20 @@ const Materias: React.FC = () => {
                 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="year">Año</Label>
+                    <Label htmlFor="semestre">Semestre</Label>
                     <Select 
-                      value={formData.year.toString()} 
-                      onValueChange={(value) => handleSelectChange('year', value)}
+                      value={formData.semestre.toString()} 
+                      onValueChange={(value) => handleSelectChange('semestre', value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Año" />
+                        <SelectValue placeholder="Semestre" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">1° año</SelectItem>
-                        <SelectItem value="2">2° año</SelectItem>
-                        <SelectItem value="3">3° año</SelectItem>
-                        <SelectItem value="4">4° año</SelectItem>
-                        <SelectItem value="5">5° año</SelectItem>
+                        <SelectItem value="1">1° semestre</SelectItem>
+                        <SelectItem value="2">2° semestre</SelectItem>
+                        <SelectItem value="3">3° semestre</SelectItem>
+                        <SelectItem value="4">4° semestre</SelectItem>
+                        <SelectItem value="5">5° semestre</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -328,7 +338,7 @@ const Materias: React.FC = () => {
                 id={materia.id}
                 codigo={materia.codigo}
                 nombre={materia.nombre}
-                year={materia.year}
+                semestre={materia.semestre}
                 cuatrimestre={materia.cuatrimestre}
                 horas={materia.horas}
                 carrera={materia.carrera?.nombre || ''}
