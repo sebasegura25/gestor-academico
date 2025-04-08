@@ -1,7 +1,18 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  XAxisProps,
+  YAxisProps
+} from 'recharts';
+import { ChartContainer } from '@/components/ui/chart';
 
 type BarChartComponentProps = {
   title: string;
@@ -22,6 +33,23 @@ const BarChartComponent: React.FC<BarChartComponentProps> = ({
   barColor = "#2563EB",
   className,
 }) => {
+  // Define custom XAxis and YAxis props with proper defaults
+  const xAxisProps: XAxisProps = {
+    dataKey: "name",
+    tick: { fontSize: 12 },
+    tickLine: false,
+    axisLine: { stroke: '#E5E7EB' },
+    angle: -45,
+    textAnchor: "end",
+    height: 60
+  };
+
+  const yAxisProps: YAxisProps = {
+    axisLine: false,
+    tickLine: false,
+    tick: { fontSize: 12 }
+  };
+
   return (
     <Card className={`shadow-card ${className}`}>
       <CardHeader>
@@ -40,20 +68,8 @@ const BarChartComponent: React.FC<BarChartComponentProps> = ({
               }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fontSize: 12 }} 
-                tickLine={false}
-                axisLine={{ stroke: '#E5E7EB' }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fontSize: 12 }} 
-              />
+              <XAxis {...xAxisProps} />
+              <YAxis {...yAxisProps} />
               <Tooltip 
                 formatter={(value) => [`${value}`, '']}
                 contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }}
