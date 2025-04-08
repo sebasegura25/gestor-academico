@@ -3,28 +3,12 @@ import MainLayout from '@/components/layout/MainLayout';
 import MateriaCard from '@/components/academico/MateriaCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger, 
-  DialogClose 
-} from '@/components/ui/dialog';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Plus, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
 interface Materia {
   id: string;
   codigo: string;
@@ -38,12 +22,10 @@ interface Materia {
     nombre: string;
   };
 }
-
 interface Carrera {
   id: string;
   nombre: string;
 }
-
 const Materias: React.FC = () => {
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
@@ -59,48 +41,42 @@ const Materias: React.FC = () => {
     carrera_id: '',
     docente: ''
   });
-
   const fetchCarreras = async () => {
     try {
-      const { data, error } = await supabase
-        .from('carreras')
-        .select('id, nombre')
-        .order('nombre');
-      
+      const {
+        data,
+        error
+      } = await supabase.from('carreras').select('id, nombre').order('nombre');
       if (error) throw error;
       setCarreras(data || []);
-      
       if (data && data.length > 0) {
-        setFormData(prev => ({ ...prev, carrera_id: data[0].id }));
+        setFormData(prev => ({
+          ...prev,
+          carrera_id: data[0].id
+        }));
       }
     } catch (error) {
       console.error('Error al cargar carreras:', error);
       toast.error('Error al cargar carreras');
     }
   };
-
   const fetchMaterias = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('materias')
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from('materias').select(`
           *,
           carrera:carreras(nombre)
-        `)
-        .order('semestre')
-        .order('cuatrimestre')
-        .order('nombre');
-      
+        `).order('semestre').order('cuatrimestre').order('nombre');
       if (error) throw error;
-      
       const formattedData = data?.map(materia => ({
         ...materia,
         carrera: {
           nombre: materia.carrera?.nombre || 'Sin carrera asignada'
         }
       })) || [];
-      
       setMaterias(formattedData);
       setFilteredMaterias(formattedData);
     } catch (error) {
@@ -110,40 +86,32 @@ const Materias: React.FC = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchCarreras();
     fetchMaterias();
   }, []);
-
   useEffect(() => {
-    const filtered = materias.filter(materia => 
-      materia.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      materia.codigo.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = materias.filter(materia => materia.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || materia.codigo.toLowerCase().includes(searchQuery.toLowerCase()));
     setFilteredMaterias(filtered);
   }, [searchQuery, materias]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value
+    } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'semestre' || name === 'cuatrimestre' || name === 'horas'
-        ? parseInt(value)
-        : value
+      [name]: name === 'semestre' || name === 'cuatrimestre' || name === 'horas' ? parseInt(value) : value
     }));
   };
-
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData(prev => ({
+      ...prev,
       [name]: name === 'cuatrimestre' && value === 'anual' ? 0 : value
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       const dataToSubmit = {
         codigo: formData.codigo,
@@ -154,13 +122,10 @@ const Materias: React.FC = () => {
         carrera_id: formData.carrera_id,
         docente: formData.docente
       };
-      
-      const { error } = await supabase
-        .from('materias')
-        .insert([dataToSubmit]);
-      
+      const {
+        error
+      } = await supabase.from('materias').insert([dataToSubmit]);
       if (error) throw error;
-      
       toast.success('Materia creada exitosamente');
       setFormData({
         codigo: '',
@@ -177,9 +142,7 @@ const Materias: React.FC = () => {
       toast.error('Error al crear materia');
     }
   };
-
-  return (
-    <MainLayout>
+  return <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -205,51 +168,19 @@ const Materias: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="codigo">Código</Label>
-                    <Input
-                      id="codigo"
-                      name="codigo"
-                      value={formData.codigo}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="codigo" name="codigo" value={formData.codigo} onChange={handleInputChange} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
-                    <Input
-                      id="nombre"
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="nombre" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="semestre">Semestre</Label>
-                    <Select 
-                      value={formData.semestre.toString()} 
-                      onValueChange={(value) => handleSelectChange('semestre', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Semestre" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1° semestre</SelectItem>
-                        <SelectItem value="2">2° semestre</SelectItem>
-                        <SelectItem value="3">3° semestre</SelectItem>
-                        <SelectItem value="4">4° semestre</SelectItem>
-                        <SelectItem value="5">5° semestre</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="cuatrimestre">Cuatrimestre</Label>
-                    <Select 
-                      value={formData.cuatrimestre === 0 ? "anual" : formData.cuatrimestre.toString()} 
-                      onValueChange={(value) => handleSelectChange('cuatrimestre', value)}
-                    >
+                    <Select value={formData.cuatrimestre === 0 ? "anual" : formData.cuatrimestre.toString()} onValueChange={value => handleSelectChange('cuatrimestre', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Cuatrimestre" />
                       </SelectTrigger>
@@ -262,47 +193,27 @@ const Materias: React.FC = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="horas">Horas semanales</Label>
-                    <Input
-                      id="horas"
-                      name="horas"
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={formData.horas}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="horas" name="horas" type="number" min="1" max="20" value={formData.horas} onChange={handleInputChange} required />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="carrera_id">Carrera</Label>
-                  <Select 
-                    value={formData.carrera_id} 
-                    onValueChange={(value) => handleSelectChange('carrera_id', value)}
-                  >
+                  <Select value={formData.carrera_id} onValueChange={value => handleSelectChange('carrera_id', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una carrera" />
                     </SelectTrigger>
                     <SelectContent>
-                      {carreras.map(carrera => (
-                        <SelectItem key={carrera.id} value={carrera.id}>
+                      {carreras.map(carrera => <SelectItem key={carrera.id} value={carrera.id}>
                           {carrera.nombre}
-                        </SelectItem>
-                      ))}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="docente">Docente a cargo</Label>
-                  <Input
-                    id="docente"
-                    name="docente"
-                    placeholder="Apellido y nombre del docente"
-                    value={formData.docente}
-                    onChange={handleInputChange}
-                  />
+                  <Input id="docente" name="docente" placeholder="Apellido y nombre del docente" value={formData.docente} onChange={handleInputChange} />
                 </div>
                 
                 <DialogFooter>
@@ -318,43 +229,18 @@ const Materias: React.FC = () => {
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Buscar materias por código o nombre..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <Input placeholder="Buscar materias por código o nombre..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
         </div>
 
-        {loading ? (
-          <div className="text-center py-10">
+        {loading ? <div className="text-center py-10">
             <p>Cargando materias...</p>
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredMaterias.map((materia) => (
-              <MateriaCard
-                key={materia.id}
-                id={materia.id}
-                codigo={materia.codigo}
-                nombre={materia.nombre}
-                semestre={materia.semestre}
-                cuatrimestre={materia.cuatrimestre}
-                horas={materia.horas}
-                carrera={materia.carrera?.nombre || ''}
-                docente={materia.docente}
-              />
-            ))}
-            {filteredMaterias.length === 0 && (
-              <div className="col-span-full text-center py-12">
+          </div> : <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredMaterias.map(materia => <MateriaCard key={materia.id} id={materia.id} codigo={materia.codigo} nombre={materia.nombre} semestre={materia.semestre} cuatrimestre={materia.cuatrimestre} horas={materia.horas} carrera={materia.carrera?.nombre || ''} docente={materia.docente} />)}
+            {filteredMaterias.length === 0 && <div className="col-span-full text-center py-12">
                 <p className="text-muted-foreground">No se encontraron materias con ese nombre o código</p>
-              </div>
-            )}
-          </div>
-        )}
+              </div>}
+          </div>}
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default Materias;
