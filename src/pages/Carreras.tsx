@@ -35,7 +35,7 @@ interface Carrera {
   nombre: string;
   duracion: number;
   descripcion: string;
-  planEstudioUrl?: string;
+  plan_estudio_url?: string;
   cantidadMaterias?: number;
 }
 
@@ -48,7 +48,7 @@ const Carreras: React.FC = () => {
     nombre: '',
     duracion: 3,
     descripcion: '',
-    planEstudioUrl: ''
+    plan_estudio_url: ''
   });
 
   const fetchCarreras = async () => {
@@ -119,7 +119,7 @@ const Carreras: React.FC = () => {
         nombre: '',
         duracion: 3,
         descripcion: '',
-        planEstudioUrl: ''
+        plan_estudio_url: ''
       });
       fetchCarreras();
     } catch (error) {
@@ -231,12 +231,12 @@ const Carreras: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="planEstudioUrl">URL del Plan de Estudios</Label>
+                  <Label htmlFor="plan_estudio_url">URL del Plan de Estudios</Label>
                   <Input
-                    id="planEstudioUrl"
-                    name="planEstudioUrl"
+                    id="plan_estudio_url"
+                    name="plan_estudio_url"
                     placeholder="https://ejemplo.com/plan-estudios.pdf"
-                    value={formData.planEstudioUrl}
+                    value={formData.plan_estudio_url}
                     onChange={handleInputChange}
                   />
                   <p className="text-xs text-muted-foreground">
@@ -279,12 +279,12 @@ const Carreras: React.FC = () => {
                   duracion={carrera.duracion}
                   descripcion={carrera.descripcion}
                   cantidadMaterias={carrera.cantidadMaterias || 0}
-                  planEstudioUrl={carrera.planEstudioUrl}
+                  planEstudioUrl={carrera.plan_estudio_url}
                 />
                 <div className="absolute top-3 right-3 flex space-x-2">
-                  {carrera.planEstudioUrl && (
+                  {carrera.plan_estudio_url && (
                     <a 
-                      href={carrera.planEstudioUrl} 
+                      href={carrera.plan_estudio_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="bg-blue-100 p-1.5 rounded-full hover:bg-blue-200 transition-colors"
